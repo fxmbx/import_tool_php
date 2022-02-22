@@ -13,15 +13,16 @@ class Database
 		// $username = "root";
 		// $password = "";
 		$servername = "localhost";
-		$username = "WHATEVER_YOUR_USERNAME_IS";
-		$password = "WHATEVER_YOUR_PASSWORD_IS";
+		$username = "sa";
+		$password = "Beedayme2211.";
+		$dbname = "bolloreDb2";
 
 
 		try {
-			$this->db = new PDO("mysql:host=$servername;dbname=WHATEVER_YOUR_DB_NAME_IS;", $username, $password);
+			$this->db = new PDO("sqlsvr:Server=$servername,1433;Database=$dbname;", $username, $password);
 			// set the PDO error mode to exception
 			$this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-			//echo "Connected successfully";
+			echo "Connected successfully";
 			// I won't echo thsi message but use it to for checking if you connected to the db
 			//incase you don't get an error message
 		} catch (PDOException $e) {
@@ -166,10 +167,24 @@ class Database
 	}
 
 	//For user registration
-	public function insert_user($paycode, $first, $middle, $last, $email, $hash, $department, $enrollment_year, $pnumber)
+	public function insert_department($id,$name)
 	{
 		try {
-			$role = 2;
+			$res = null;
+			$stmt = $this->db->prepare("INSERT INTO Departments (Id, DepartmentName) VALUES(?,?);");
+			$stmt->execute([$id,$name]);
+			$stmt = null;
+			return 'Done';
+		} catch (PDOException $e) {
+			// For handling error
+			echo 'Error: ' . $e->getMessage();
+		}
+	}
+
+	// Create Department
+	public function insert_user($name)
+	{
+		try {
 			$res = null;
 			$stmt = $this->db->prepare("INSERT INTO users(payrollID,first_name,middle_name,surname,email,role_id,`password`, department,enrollment_year,phone_number,image,activated) 
 										VALUES (?,?,?,?,?,?,?,?,?,?,null,1)");

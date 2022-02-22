@@ -20,6 +20,13 @@ include_once '../inc/db.php';
                                     <h4 class="pb-2 display-5 text-center">Import File From CSV</h4>
                                     <form id="import">
                                         <div class="row">
+                                            <div class="col-md-12 col-sm-12">
+                                                <select name="table" class="form-control">
+                                                    <option value="Department">Department</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row">
                                             <div class="col-md-8 col-sm-12">
                                                 <input type="file" name="csv" class="form-control">
                                             </div>

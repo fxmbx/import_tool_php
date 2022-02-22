@@ -8,6 +8,7 @@ if (isset($_FILES['csv'])) {
     $issues_paycodes = array();
     $uploadable = array();
     $row = 0;
+    $table = $_POST['table'];
 
     if ($_FILES['csv']['error'] == 0) {
         $name = $_FILES['csv']['name'];
@@ -21,27 +22,31 @@ if (isset($_FILES['csv'])) {
                 while (($data = fgetcsv($handle, 10000, ',')) !== false) {
                     if ($data[0] == NULL) {
                         // add name if neccessary
-                        array_push($issues_paycodes, array("paycode" => $data[0], "fullname" => $data[2]));
+                        array_push($issues_paycodes, array("id" => $data[0], "department" => $data[1]));
                         $row++;
                         echo 'got here 1';
                         continue;
                     } else {
-                        $paycode = Database::getInstance()->get_paycode($data[0]);
-                        array_push($csv, $paycode);
-                        if (empty($paycode)) {
-                            // add name if neccessary
-                            $name = explode(' ', $data[2]);
-                            $middle_name = ($name[2] == null || $name[2] == '.') ? "" : $name[2];
-                            array_push($uploadable, array("paycode" => $data[0], "department" => $data[1], "surname" => str_replace("|", "", $name[0]), "first_name" => $name[1], "middle_name" => $middle_name, "phone_number" => $data[3], "email" => $data[4]));
+                        // $paycode = Database::getInstance()->get_paycode($data[0]);
+                        // array_push($csv, $paycode);
+                        if ($table == 'Department') {
+                            array_push($uploadable, array("id" => $data[0], "department" => $data[1]));
                             $row++;
-                        } else {
-                            // add name if neccessary
-                            array_push($issues_paycodes, array("paycode" => $data[0], "fullname" => $data[2]));
-                            $row++;
-
-                            echo 'got here 3';
-                            continue;
                         }
+                        // if (empty($paycode)) {
+                        //     // add name if neccessary
+                        //     $name = explode(' ', $data[2]);
+                        //     $middle_name = ($name[2] == null || $name[2] == '.') ? "" : $name[2];
+                        //     array_push($uploadable, array("paycode" => $data[0], "department" => $data[1], "surname" => str_replace("|", "", $name[0]), "first_name" => $name[1], "middle_name" => $middle_name, "phone_number" => $data[3], "email" => $data[4]));
+                        //     $row++;
+                        // } else {
+                        //     // add name if neccessary
+                        //     array_push($issues_paycodes, array("paycode" => $data[0], "fullname" => $data[2]));
+                        //     $row++;
+
+                        //     echo 'got here 3';
+                        //     continue;
+                        // }
                     }
                 }
                 fclose($handle);
@@ -51,27 +56,28 @@ if (isset($_FILES['csv'])) {
 
 
     $count = 0;
-    foreach ($uploadable as $staff) {
-        $paycode = $staff['paycode'];
-        $last = $staff['surname'] == null ? " " : $staff['surname'];
-        $first = $staff['first_name'] == null ? " " : $staff['first_name'];
-        $middle = $staff['middle_name'] == null ? " " : $staff['middle_name'];
-        $pnumber = $staff['phone_number'];
-        $department = $staff['department'];
-        $enrollment_year = '2021';
-        $email = $staff['email'];
-        $hash1 = bin2hex(openssl_random_pseudo_bytes(4));
-        $hash = password_hash($hash1, PASSWORD_DEFAULT);
+    foreach ($uploadable as $department) {
+        $id = $department['id'];
+        // $last = $department['surname'] == null ? " " : $department['surname'];
+        // $first = $department['first_name'] == null ? " " : $department['first_name'];
+        // $middle = $department['middle_name'] == null ? " " : $department['middle_name'];
+        // $pnumber = $department['phone_number'];
+        // $department = $department['department'];
+        // $enrollment_year = '2021';
+        // $email = $department['email'];
+        // $hash1 = bin2hex(openssl_random_pseudo_bytes(4));
+        // $hash = password_hash($hash1, PASSWORD_DEFAULT);
+        $name = $department['department'];
 
-        $newUser = Database::getInstance()->insert_user($paycode, $first, $middle, $last, $email, $hash, $department, $enrollment_year, $pnumber);
-        if ($newUser == 'Done') {
-            $myfile = fopen("../csv/logs.txt", "a") or die("Unable to open file!");
-            $txt = $count . " email: " . $email . " password: " . $hash1;
+        $newDepartment = Database::getInstance()->insert_department($id, $name);
+        if ($newDepartment == 'Done') {
+            $myfile = fopen("../csv/department_logs.txt", "a") or die("Unable to open file!");
+            $txt = $count . " id: " . $id . " department: " . $name;
             fwrite($myfile, "\n" . $txt);
             fclose($myfile);
             $count++;
         } else {
-            echo $paycode + "\n";
+            echo $id + "\n";
         }
     }
     if ($count == 0) {
